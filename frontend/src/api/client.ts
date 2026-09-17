@@ -65,3 +65,24 @@ export async function fetchHealth(): Promise<SourceStatus[]> {
   const body = (await response.json()) as { data: SourceStatus[] };
   return body.data;
 }
+
+export interface CountryIndicator {
+  country_iso: string;
+  indicator_code: string;
+  indicator_label: string;
+  year: number;
+  value: number | null;
+  source: string;
+}
+
+export async function fetchIndicators(country?: string): Promise<CountryIndicator[]> {
+  const params = new URLSearchParams();
+  if (country) params.set("country", country);
+
+  const response = await fetch(`${API_BASE_URL}/api/indicators?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(`Échec de récupération des indicateurs: HTTP ${response.status}`);
+  }
+  const body = (await response.json()) as { data: CountryIndicator[] };
+  return body.data;
+}
