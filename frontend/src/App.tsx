@@ -2,11 +2,13 @@ import { NavLink, Route, Routes } from "react-router-dom";
 import MapView from "./pages/MapView.js";
 import StatsView from "./pages/StatsView.js";
 import SourcesView from "./pages/SourcesView.js";
+import IndicatorsView from "./pages/IndicatorsView.js";
 import WhatsAppButton from "./components/WhatsAppButton.js";
 
 const NAV_ITEMS = [
   { to: "/", label: "carte" },
   { to: "/statistiques", label: "statistiques" },
+  { to: "/indicateurs", label: "indicateurs" },
   { to: "/sources", label: "sources" },
 ];
 
@@ -24,7 +26,7 @@ export default function App(): JSX.Element {
         <span className="font-data text-xs text-paper/60">veille géopolitique en continu</span>
       </header>
 
-      <nav className="flex gap-6 border-b border-hairline px-6 pt-3 font-data text-xs uppercase tracking-wide">
+      <nav className="flex gap-6 overflow-x-auto border-b border-hairline px-6 pt-3 font-data text-xs uppercase tracking-wide">
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.to} to={item.to} end className={({ isActive }) => navLinkClass(isActive)}>
             {item.label}
@@ -36,6 +38,7 @@ export default function App(): JSX.Element {
         <Routes>
           <Route path="/" element={<MapView />} />
           <Route path="/statistiques" element={<StatsView />} />
+          <Route path="/indicateurs" element={<IndicatorsView />} />
           <Route path="/sources" element={<SourcesView />} />
         </Routes>
       </div>
