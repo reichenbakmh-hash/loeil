@@ -1,0 +1,8 @@
+name = "loeil-api"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "loeil_db"
+database_id = "5aecde51-623a-494d-9864-e259181da9f2"

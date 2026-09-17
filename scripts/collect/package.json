@@ -1,0 +1,11 @@
+{
+  "name": "collect",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "collect": "tsx index.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0"
+  }
+}
