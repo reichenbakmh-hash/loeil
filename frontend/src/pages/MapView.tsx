@@ -3,6 +3,8 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { fetchEvents, type GeoEvent } from "../api/client.js";
 import CountryPanel from "../components/CountryPanel.js";
 
+const SOURCES = ["ucdp", "gdelt", "reliefweb"];
+
 function markerColor(fatalities: number): string {
   if (fatalities >= 10) return "#B3432B";
   if (fatalities > 0) return "#C9A227";
@@ -13,17 +15,41 @@ export default function MapView(): JSX.Element {
   const [events, setEvents] = useState<GeoEvent[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [countryFilter, setCountryFilter] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
 
   useEffect(() => {
-    fetchEvents()
+    fetchEvents({ country: countryFilter || undefined, source: sourceFilter || undefined })
       .then(setEvents)
       .catch((error: Error) => setErrorMessage(error.message));
-  }, []);
+  }, [countryFilter, sourceFilter]);
 
   return (
     <div className="absolute inset-0">
+      <div className="absolute left-4 top-4 z-10 flex flex-wrap gap-2">
+        <input
+          value={countryFilter}
+          onChange={(event) => setCountryFilter(event.target.value.toUpperCase())}
+          placeholder="pays (ISO3)"
+          maxLength={3}
+          className="w-28 rounded border border-hairline bg-panel px-3 py-2 font-data text-xs text-paper outline-none focus:border-signal"
+        />
+        <select
+          value={sourceFilter}
+          onChange={(event) => setSourceFilter(event.target.value)}
+          className="rounded border border-hairline bg-panel px-3 py-2 font-data text-xs text-paper outline-none focus:border-signal"
+        >
+          <option value="">toutes les sources</option>
+          {SOURCES.map((source) => (
+            <option key={source} value={source}>
+              {source}
+            </option>
+          ))}
+        </select>
+      </div>
+
       {errorMessage ? (
-        <div className="absolute left-6 top-4 z-10 rounded border border-risk/40 bg-panel px-3 py-2 font-data text-xs text-risk">
+        <div className="absolute left-4 top-16 z-10 rounded border border-risk/40 bg-panel px-3 py-2 font-data text-xs text-risk">
           {errorMessage}
         </div>
       ) : null}
