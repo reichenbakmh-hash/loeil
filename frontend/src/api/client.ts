@@ -35,3 +35,33 @@ export async function fetchEvents(filter: EventsFilter = {}): Promise<GeoEvent[]
   const body = (await response.json()) as { data: GeoEvent[] };
   return body.data;
 }
+
+export interface StatRow {
+  group_key: string | null;
+  event_count: number;
+  total_fatalities: number | null;
+}
+
+export async function fetchStats(groupBy: "country" | "month" | "source"): Promise<StatRow[]> {
+  const response = await fetch(`${API_BASE_URL}/api/stats?group_by=${groupBy}`);
+  if (!response.ok) {
+    throw new Error(`Échec de récupération des statistiques: HTTP ${response.status}`);
+  }
+  const body = (await response.json()) as { data: StatRow[] };
+  return body.data;
+}
+
+export interface SourceStatus {
+  source: string;
+  status: "ok" | "error";
+  last_run: string | null;
+}
+
+export async function fetchHealth(): Promise<SourceStatus[]> {
+  const response = await fetch(`${API_BASE_URL}/api/health`);
+  if (!response.ok) {
+    throw new Error(`Échec de récupération de l'état des sources: HTTP ${response.status}`);
+  }
+  const body = (await response.json()) as { data: SourceStatus[] };
+  return body.data;
+}
