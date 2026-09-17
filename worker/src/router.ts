@@ -3,6 +3,7 @@ import { handleEvents } from "./handlers/events.js";
 import { handleCountries } from "./handlers/countries.js";
 import { handleStats } from "./handlers/stats.js";
 import { handleHealth } from "./handlers/health.js";
+import { handleIndicators } from "./handlers/indicators.js";
 
 export async function route(request: Request, env: Env): Promise<Response> {
   const url = new URL(request.url);
@@ -14,6 +15,8 @@ export async function route(request: Request, env: Env): Promise<Response> {
       return handleCountries(env);
     case "/api/stats":
       return handleStats(url, env);
+    case "/api/indicators":
+      return handleIndicators(url, env);
     case "/api/health":
       return handleHealth(env);
     default:
