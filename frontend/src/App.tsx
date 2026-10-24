@@ -1,4 +1,4 @@
-import { NavLink, Route, Routes } from "react-router-dom";
+ximport { NavLink, Route, Routes } from "react-router-dom";
 import MapView from "./pages/MapView.js";
 import StatsView from "./pages/StatsView.js";
 import SourcesView from "./pages/SourcesView.js";
