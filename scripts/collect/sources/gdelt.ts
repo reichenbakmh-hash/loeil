@@ -54,11 +54,17 @@ async function fetchArticles(query: string): Promise<GdeltArticle[]> {
   return body.articles ?? [];
 }
 
+// GDELT renvoie les dates sous la forme 20261024T120000Z, que Date ne sait pas lire telle quelle.
+function gdeltDateToIso(value: string): string {
+  const match = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/.exec(value);
+  return match ? `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}Z` : value;
+}
+
 function toEvent(article: GdeltArticle): NormalizedEvent {
   return {
     source: "gdelt",
     sourceEventId: article.url,
-    eventDate: toIsoDate(article.seendate),
+    eventDate: toIsoDate(gdeltDateToIso(article.seendate)),
     countryIso: resolveCountryIso(article.sourcecountry),
     region: null,
     latitude: null,
@@ -75,12 +81,18 @@ function toEvent(article: GdeltArticle): NormalizedEvent {
 export const gdeltSource: SourceModule = {
   name: "gdelt",
   async fetchSince(): Promise<SourceFetchResult> {
-    const queries = ["conflict OR clashes OR ceasefire", "sanctions OR embargo", "coup OR unrest"];
+    const queries = ["(conflict OR clashes OR ceasefire)", "(sanctions OR embargo)", "(coup OR unrest)"];
     const events: NormalizedEvent[] = [];
 
     for (const query of queries) {
       const articles = await fetchArticles(query);
-      events.push(...articles.map(toEvent));
+      for (const article of articles) {
+        try {
+          events.push(toEvent(article));
+        } catch {
+          // un article à la date illisible est ignoré sans bloquer les autres
+        }
+      }
       await new Promise((resolve) => setTimeout(resolve, 5500));
     }
 

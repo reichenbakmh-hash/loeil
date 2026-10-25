@@ -23,13 +23,25 @@ async function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function d1Execute(sql: string, params: unknown[] = [], maxRetries = 3): Promise<D1QueryResult> {
+// L'API Cloudflare limite le nombre de requêtes: on espace tous les appels D1 (4 par seconde au maximum).
+let nextSlot = 0;
+async function waitForSlot(): Promise<void> {
+  const now = Date.now();
+  const wait = Math.max(0, nextSlot - now);
+  nextSlot = Math.max(now, nextSlot) + 260;
+  if (wait > 0) {
+    await sleep(wait);
+  }
+}
+
+export async function d1Execute(sql: string, params: unknown[] = [], maxRetries = 5): Promise<D1QueryResult> {
   const env = readEnv();
   const url = `https://api.cloudflare.com/client/v4/accounts/${env.accountId}/d1/database/${env.databaseId}/query`;
   let lastError: string = "erreur inconnue";
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     try {
+      await waitForSlot();
       const response = await fetch(url, {
         method: "POST",
         headers: {
@@ -41,7 +53,7 @@ export async function d1Execute(sql: string, params: unknown[] = [], maxRetries 
 
       if (!response.ok) {
         lastError = `HTTP ${response.status}`;
-        await sleep(2 ** attempt * 500);
+        await sleep(2 ** attempt * 1000);
         continue;
       }
 

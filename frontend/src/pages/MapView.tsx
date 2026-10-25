@@ -3,7 +3,9 @@ import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
 import { fetchEvents, type GeoEvent } from "../api/client.js";
 import CountryPanel from "../components/CountryPanel.js";
 
-const SOURCES = ["ucdp", "gdelt", "reliefweb"];
+// Seules ces sources fournissent des coordonnées. La carte les interroge une par une,
+// sinon les dépêches sans coordonnées occupent tous les 200 derniers événements.
+const SOURCES = ["usgs", "eonet", "ucdp"];
 
 function markerColor(fatalities: number): string {
   if (fatalities >= 10) return "#B3432B";
@@ -19,8 +21,14 @@ export default function MapView(): JSX.Element {
   const [sourceFilter, setSourceFilter] = useState("");
 
   useEffect(() => {
-    fetchEvents({ country: countryFilter || undefined, source: sourceFilter || undefined })
-      .then(setEvents)
+    const sources = sourceFilter ? [sourceFilter] : SOURCES;
+    Promise.all(
+      sources.map((source) => fetchEvents({ source, ...(countryFilter ? { country: countryFilter } : {}) })),
+    )
+      .then((lists) => {
+        setEvents(lists.flat());
+        setErrorMessage(null);
+      })
       .catch((error: Error) => setErrorMessage(error.message));
   }, [countryFilter, sourceFilter]);
 
